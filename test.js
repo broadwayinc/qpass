@@ -27,7 +27,7 @@ const onProgress = ({ batchToProcess, itemsToProcess, completed }) => {
         queue.terminate();
     }
     console.log(
-        "완료된 작업:",
+        "Completed:",
         completed.map((r) => (r instanceof Error ? `Error: ${r.message}` : r))
     );
 
