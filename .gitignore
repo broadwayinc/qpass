@@ -8,3 +8,4 @@ node_modules/
 
 # Keep test file
 !test.js
+dist/

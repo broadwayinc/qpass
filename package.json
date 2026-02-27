@@ -1,16 +1,36 @@
 {
   "name": "qpass",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Asynchronous function handler with adjustable concurrency",
-  "main": "index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "browser": "./dist/index.js",
+  "unpkg": "./dist/qpass.js",
+  "jsdelivr": "./dist/qpass.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "type": "module",
   "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1",
-      "build": "npx tsc --project tsconfig.json"
+      "test": "npm run build && node ./test.js",
+      "typecheck": "tsc --noEmit --project tsconfig.json",
+      "build": "tsup --config tsup.config.mjs"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+      "tsup": "^8.5.0",
       "typescript": "^5.9.3"
   }
 }

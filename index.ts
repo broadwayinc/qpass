@@ -1,5 +1,10 @@
+declare const __QPASS_VERSION__: string;
+
+const QPASS_VERSION =
+    typeof __QPASS_VERSION__ === "string" ? __QPASS_VERSION__ : "0.0.0";
+
 class Qpass {
-    version = "1.0.0"; // version info
+    version = QPASS_VERSION; // version info
 
     private items: (() => Promise<any>)[] = []; // job queue
     private breakWhenError: boolean = false; // whether to stop on error

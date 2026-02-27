@@ -1,4 +1,4 @@
-import Qpass from "./index.js";
+import Qpass from "./dist/index.js";
 
 // job creator
 const createJob =

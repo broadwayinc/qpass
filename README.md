@@ -3,6 +3,15 @@
 Qpass is a lightweight promise-job queue for JavaScript/TypeScript.
 It runs jobs in cycles with configurable parallelism (`batchSize`) and reports progress after each cycle.
 
+## Platform support
+
+- Node.js ESM (`import`) via `qpass`
+- Node.js CommonJS (`require`) via `qpass`
+- Browser bundlers (Vite/Webpack/Rollup) via `qpass`
+- Browser script tag/global build via `dist/qpass.js`
+
+Version is sourced from `package.json` at build time, so you only update it in one place.
+
 ## Install
 
 ```bash
@@ -29,6 +38,37 @@ const jobs = [
 ];
 
 queue.add(jobs);
+```
+
+## Import by platform
+
+### Node.js ESM
+
+```js
+import Qpass from "qpass";
+```
+
+### Node.js CommonJS
+
+```js
+const Qpass = require("qpass").default;
+```
+
+### Browser bundler
+
+```js
+import Qpass from "qpass";
+```
+
+### Browser script tag (global)
+
+Use the global build from your package output or CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/qpass/dist/qpass.js"></script>
+<script>
+    const queue = new Qpass();
+</script>
 ```
 
 ## API
