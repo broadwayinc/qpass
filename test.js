@@ -18,12 +18,11 @@ const createJob =
 // test code
 console.log("🚀 Qpass test started\n");
 
-let did2ndTest = false;
-
 const onProgress = ({ batchToProcess, itemsToProcess, completed }) => {
     console.log(`Remaining batches: ${batchToProcess}`);
     console.log(`Remaining jobs: ${itemsToProcess}`);
-    if(itemsToProcess === 5) {
+    if(itemsToProcess === 4) {
+        console.log("Terminating the queue...");
         queue.terminate();
     }
     console.log(
@@ -35,13 +34,6 @@ const onProgress = ({ batchToProcess, itemsToProcess, completed }) => {
 
     if (itemsToProcess === 0) {
         console.log("🚀 Qpass test completed");
-
-        if (!did2ndTest) {
-            console.log("\n🚀 Qpass array addition 2nd test started\n");
-
-            did2ndTest = true;
-            testArray();
-        }
     }
 };
 
@@ -51,18 +43,6 @@ const queue = new Qpass({
     onProgress: onProgress,
 });
 
-const testLoop = () => {
-    for (let i = 1; i <= 14; i++) {
-        queue.add(createJob(i, 800, i % 3 === 0)); // multiples of 3 will fail
-    }
-};
-
-testLoop();
-
-const testArray = () => {
-    let jobs = [];
-    for (let i = 1; i <= 14; i++) {
-        jobs.push(createJob(i, 800, i % 3 === 0)); // multiples of 3 will fail
-    }
-    queue.add(jobs);
-};
+for (let i = 1; i <= 14; i++) {
+    queue.add(createJob(i, 800, i % 3 === 0)); // multiples of 3 will fail
+}

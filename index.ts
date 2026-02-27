@@ -10,37 +10,13 @@ class Qpass {
         completed: any[]; // completed job results array
     }) => void; // progress callback
 
-    private completed: any[] = []; // completed job results array
-    private runningBatches: (() => Promise<any>)[] = []; // currently running batch count
-    private runningSlots: boolean[] = []; // running slot status array
+    private activeCount: number = 0; // number of jobs currently running
+    private currentCycleCompleted: any[] = []; // completed results for current cycle
+    private stopProcessing: boolean = false; // stop scheduling new jobs when true
 
     private get batchToProcess() {
         // calculate total batch count
         return Math.ceil(this.items.length / this.batchSize);
-    }
-
-    private get batchProcessFinished() {
-        let completedCount = Object.keys(this.completed).length;
-        let isFinished = completedCount === this.runningBatches.length;
-
-        if (isFinished) {
-            const completed = this.completed; // copy
-
-            // reset state before calling callback
-            this.completed = [];
-            this.runningBatches = [];
-            this.runningSlots = [];
-
-            if (this.onProgress) {
-                this.onProgress({
-                    batchToProcess: this.batchToProcess,
-                    itemsToProcess: this.items.length,
-                    completed: completed,
-                });
-            }
-        }
-
-        return isFinished;
     }
 
     constructor(option?: {
@@ -88,55 +64,58 @@ class Qpass {
 
     // process next batch of jobs
     private processNext() {
-        // exit if queue is empty
-        if (this.items.length === 0) {
+        // exit if queue is empty, processing is stopped, or a cycle is still running
+        if (
+            this.stopProcessing ||
+            this.items.length === 0 ||
+            this.activeCount > 0
+        ) {
             return;
         }
 
-        const batchToRun = this.batchSize - this.runningBatches.length;
-        if (batchToRun <= 0) {
-            // exit if current running batches reached maximum
-            return;
-        }
+        const jobsToRun = this.items.splice(0, this.batchSize);
+        this.activeCount = jobsToRun.length;
+        this.currentCycleCompleted = new Array(jobsToRun.length);
 
-        // extract batchToRun amount of jobs
-        this.runningBatches.push(...this.items.splice(0, batchToRun));
-
-        for (let i = 0; i < this.runningBatches.length; i++) {
-            if (this.runningSlots?.[i]) {
-                continue;
-            }
-
-            this.runningSlots[i] = true;
-            (this.runningBatches[i] as () => Promise<any>)()
+        jobsToRun.forEach((job, index) => {
+            Promise.resolve()
+                .then(() => job())
                 .then((result) => {
-                    if (this.completed[i]) {
-                        return result;
-                    }
-
-                    this.completed[i] = result;
-
-                    if (this.batchProcessFinished) {
-                        return this.processNext();
-                    }
-
+                    this.finalizeJob(index, result, false);
                     return result;
                 })
                 .catch((err) => {
-                    // error handling
-                    if (this.breakWhenError) {
-                        throw err;
-                    }
-
-                    this.completed[i] = err;
-
-                    if (this.batchProcessFinished) {
-                        return this.processNext();
-                    }
-
+                    this.finalizeJob(index, err, true);
                     return err;
                 });
+        });
+    }
+
+    private finalizeJob(index: number, value: any, isError: boolean) {
+        this.currentCycleCompleted[index] = value;
+        this.activeCount -= 1;
+
+        if (isError && this.breakWhenError) {
+            this.stopProcessing = true;
+            this.items = [];
         }
+
+        if (this.activeCount !== 0) {
+            return;
+        }
+
+        const completed = this.currentCycleCompleted.slice();
+        this.currentCycleCompleted = [];
+
+        if (this.onProgress) {
+            this.onProgress({
+                batchToProcess: this.batchToProcess,
+                itemsToProcess: this.items.length,
+                completed: completed,
+            });
+        }
+
+        this.processNext();
     }
 
     terminate() {
