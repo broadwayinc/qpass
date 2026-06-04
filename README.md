@@ -96,12 +96,12 @@ new Qpass({
 ### `add(jobs)`
 
 ```ts
-add(jobs: (() => Promise<any>)[] | (() => Promise<any>)): string | string[]
+add(jobs: (() => Promise<any>)[] | (() => Promise<any>)): string[]
 ```
 
 - Adds one or many jobs to the queue.
 - Starts processing automatically.
-- Returns the generated job id for a single job, or an array of ids for multiple jobs.
+- Returns the array of ids for multiple jobs.
 
 ### `remove(id)`
 
