@@ -6,7 +6,8 @@ const QPASS_VERSION =
 class Qpass {
     version = QPASS_VERSION; // version info
 
-    private items: (() => Promise<any>)[] = []; // job queue
+    private items: { id: string; job: () => Promise<any> }[] = []; // job queue
+    private nextJobId: number = 1; // auto-generated job id
     private breakWhenError: boolean = false; // whether to stop on error
     private batchSize: number = 1; // number of jobs to process at once
     private onProgress?: (progress: {
@@ -49,10 +50,11 @@ class Qpass {
         }
     }
 
-    // add jobs to the queue at once
-    add(jobs: (() => Promise<any>)[] | (() => Promise<any>)) {
+    // add jobs to the queue at once. now returns job id.
+    add(jobs: (() => Promise<any>)[] | (() => Promise<any>)): string[] {
         // check if jobs is an array, if not convert to array
         const jobsArray = Array.isArray(jobs) ? jobs : [jobs];
+        const addedIds: string[] = [];
 
         // check if each job is a function, if so add to queue
         for (const job of jobsArray) {
@@ -61,10 +63,27 @@ class Qpass {
                     "Each job must be a function that returns a Promise"
                 );
             }
-            this.items.push(job);
+
+            const id = String(this.nextJobId++);
+            this.items.push({ id, job });
+            addedIds.push(id);
         }
 
         this.processNext();
+        return addedIds;
+    }
+
+    // remove a queued job by id
+    remove(id: string | number) {
+        const jobId = String(id);
+        const index = this.items.findIndex((item) => item.id === jobId);
+
+        if (index === -1) {
+            return false;
+        }
+
+        this.items.splice(index, 1);
+        return true;
     }
 
     // process next batch of jobs
@@ -82,9 +101,9 @@ class Qpass {
         this.activeCount = jobsToRun.length;
         this.currentCycleCompleted = new Array(jobsToRun.length);
 
-        jobsToRun.forEach((job, index) => {
+        jobsToRun.forEach((item, index) => {
             Promise.resolve()
-                .then(() => job())
+                .then(() => item.job())
                 .then((result) => {
                     this.finalizeJob(index, result, false);
                     return result;
