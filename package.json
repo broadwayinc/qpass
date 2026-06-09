@@ -1,6 +1,6 @@
 {
   "name": "qpass",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Asynchronous function handler with adjustable concurrency",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

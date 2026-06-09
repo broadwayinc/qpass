@@ -113,6 +113,17 @@ remove(id: string | number): boolean
 - Returns `true` when a queued job is removed, or `false` if the id was not found.
 - Does not stop jobs already in progress.
 
+### `setBatchSize(size)`
+
+```ts
+setBatchSize(size: number): void
+```
+
+- Changes the number of jobs processed per batch.
+- Takes effect on the next batch; any batch already in progress completes at its original size.
+- Throws if `size` is not a number or is less than `1`.
+- Safe to call at any point: mid-processing, while adding, or while removing jobs.
+
 ### `terminate()`
 
 ```ts

@@ -73,6 +73,14 @@ class Qpass {
         return addedIds;
     }
 
+    // change the number of jobs processed per batch
+    setBatchSize(size: number) {
+        if (typeof size !== "number" || size < 1) {
+            throw new Error("batchSize must be at least 1");
+        }
+        this.batchSize = size;
+    }
+
     // remove a queued job by id
     remove(id: string | number) {
         const jobId = String(id);
