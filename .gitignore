@@ -9,3 +9,5 @@ node_modules/
 # Keep test file
 !test.js
 dist/
+# Claude Code agent worktrees (nested checkouts, never commit)
+.claude/worktrees/
